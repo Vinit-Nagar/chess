@@ -40,6 +40,25 @@ io.on("connection", function (uniquesoket) {
       delete players.black;
     }
   });
+  uniquesoket.on("move", (move) => {
+    try {
+      if (chess.turn() === "w" && uniquesoket.id != players.white) return;
+      if (chess.turn() === "b" && uniquesoket.id != players.black) return;
+
+      const result = chess.move(move);
+      if (result) {
+        currentPlayer = chess.turn();
+        io.emit("move", move);
+        io.emit("boardState", chess.fen());
+      } else {
+        console.log("Invalid move: ", move);
+        uniquesoket.emit("invalidMove", move);
+      }
+    } catch (err) {
+      uniquesoket.emit("invalid move: ", move);
+      console.log(err);
+    }
+  });
 });
 
 server.listen(3000, function () {
